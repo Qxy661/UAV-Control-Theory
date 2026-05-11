@@ -114,31 +114,57 @@ $$\dot{\psi} = q \sin\phi / \cos\theta + r \cos\phi / \cos\theta$$
 
 ```matlab
 function tau = attitude_backstepping(phi, theta, psi, p, q, r, ...
-    phi_ref, theta_ref, psi_ref, params)
-    % 四旋翼姿态反步控制
+    phi_ref, theta_ref, psi_ref, phi_ref_dot, theta_ref_dot, ...
+    psi_ref_dot, params)
+    % 四旋翼姿态反步控制（严格反步法）
+    %
+    % 步骤:
+    %   1) 定义误差 z1 = phi - phi_ref
+    %   2) 设计虚拟控制 alpha 使得 V1 = 0.5*z1^2 递减
+    %   3) 定义 z2 = p - alpha，构造 V = 0.5*z1^2 + 0.5*z2^2
+    %   4) 求解最终力矩使 dV/dt < 0
 
-    c1 = params.c1;
-    c2 = params.c2;
+    c1 = params.c1;   % 第一层增益
+    c2 = params.c2;   % 第二层增益
 
-    % 误差
-    e_phi = phi - phi_ref;
-    e_theta = theta - theta_ref;
-    e_psi = psi - psi_ref;
+    % ========== 以滚转角 phi 通道为例 ==========
+    % --- 第一步：定义跟踪误差 ---
+    z1 = phi - phi_ref;
 
-    % 虚拟控制（期望角速率）
-    p_ref = -c1 * e_phi;
-    q_ref = -c1 * e_theta;
-    r_ref = -c1 * e_psi;
+    % --- 第二步：虚拟控制律 alpha ---
+    %   选取 V1 = 0.5 * z1^2
+    %   令 dV1/dt = z1 * (p - phi_ref_dot) = -c1 * z1^2
+    %   => alpha = phi_ref_dot - c1 * z1
+    alpha = phi_ref_dot - c1 * z1;
 
-    % 角速率误差
-    e_p = p - p_ref;
-    e_q = q - q_ref;
-    e_r = r - r_ref;
+    %   虚拟控制的导数（需要 phi_ref_ddot，此处用数值近似）
+    alpha_dot = -c1 * (p - phi_ref_dot);  % d(alpha)/dt 的近似
 
-    % 控制力矩
-    tau_phi = -c2 * e_p - c1 * e_phi;
-    tau_theta = -c2 * e_q - c1 * e_theta;
-    tau_psi = -c2 * e_r - c1 * e_psi;
+    % --- 第三步：定义第二层误差 ---
+    z2 = p - alpha;
+
+    % --- 第四步：最终控制律 ---
+    %   V = 0.5*z1^2 + 0.5*z2^2
+    %   dV/dt = z1*z1_dot + z2*z2_dot
+    %        = z1*(z2 + alpha - phi_ref_dot) + z2*(u - alpha_dot)
+    %        = z1*(z2 - c1*z1) + z2*(u - alpha_dot)
+    %   令 dV/dt = -c1*z1^2 - c2*z2^2
+    %   => u = alpha_dot - z1 - c2*z2
+    tau_phi = alpha_dot - z1 - c2 * z2;
+
+    % ========== 俯仰角 theta 通道（同理） ==========
+    z1_theta = theta - theta_ref;
+    alpha_theta = theta_ref_dot - c1 * z1_theta;
+    alpha_theta_dot = -c1 * (q - theta_ref_dot);
+    z2_theta = q - alpha_theta;
+    tau_theta = alpha_theta_dot - z1_theta - c2 * z2_theta;
+
+    % ========== 偏航角 psi 通道（同理） ==========
+    z1_psi = psi - psi_ref;
+    alpha_psi = psi_ref_dot - c1 * z1_psi;
+    alpha_psi_dot = -c1 * (r - psi_ref_dot);
+    z2_psi = r - alpha_psi;
+    tau_psi = alpha_psi_dot - z1_psi - c2 * z2_psi;
 
     tau = [tau_phi; tau_theta; tau_psi];
 end
@@ -170,6 +196,8 @@ end
 ---
 
 ## 4. 反步法的改进
+
+> **相关章节**：动态面控制（DSC）通过引入低通滤波器代替解析求导，解决了反步法的"项爆炸"问题，是反步法最重要的改进之一，详见 [动态面控制DSC](./03-动态面控制DSC.md)。
 
 ### 4.1 自适应反步法
 

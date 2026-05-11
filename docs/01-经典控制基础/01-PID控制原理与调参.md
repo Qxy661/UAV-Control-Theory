@@ -110,6 +110,25 @@ Ziegler-Nichols 是最经典的 PID 调参方法，有两种变体：
 | PI | $0.45K_u$ | $0.54K_u/T_u$ | - |
 | PID | $0.6K_u$ | $1.2K_u/T_u$ | $0.075K_uT_u$ |
 
+**MATLAB 示例：Ziegler-Nichols 调参与 PID 控制器创建**
+
+```matlab
+% Ziegler-Nichols tuning example
+Ku = 12; Tu = 0.5; % Ultimate gain and period (from relay experiment)
+% PID gains
+Kp = 0.6 * Ku;
+Ki = 2 * Kp / Tu;
+Kd = Kp * Tu / 8;
+% Create PID controller in MATLAB
+C = pid(Kp, Ki, Kd);
+% Plant model (simplified quadrotor attitude)
+s = tf('s');
+P = 1 / (s^2 + 0.5*s);  % 2nd order attitude plant
+% Closed-loop step response
+sys_cl = feedback(C * P, 1);
+step(sys_cl); title('PID Attitude Control Step Response');
+```
+
 **方法二：阶跃响应法（Process Reaction Curve）**
 
 步骤：
@@ -187,6 +206,8 @@ end
 ---
 
 ## 4. 频域分析视角
+
+> **延伸阅读**：频域分析的完整理论（Bode图、Nyquist判据、稳定裕度、超前-滞后补偿器设计）详见 [频域分析与设计](./02-频域分析与设计.md)。
 
 ### 4.1 PID 的频率响应
 
@@ -456,6 +477,8 @@ u_max_z = 100;  % 最大油门（%）
 ```
 
 ### 8.2 改进方向
+
+> **相关章节**：多回路级联 PID 是无人机控制的核心架构，其设计原则（带宽分离、内外环独立调参）详见 [多回路与级联控制](./05-多回路与级联控制.md)。
 
 | 改进方向 | 方法 | 适用场景 |
 |---------|------|---------|

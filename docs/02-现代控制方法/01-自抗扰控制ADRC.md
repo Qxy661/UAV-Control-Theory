@@ -110,6 +110,8 @@ end
 
 ### 2.2 扩张状态观测器（Extended State Observer, ESO）
 
+> **延伸阅读**：ESO 属于非线性观测器的一种，更多非线性观测器设计方法（高增益观测器、扩展观测器等）详见 [非线性观测器](../03-非线性控制/05-非线性观测器.md)。
+
 **核心思想**：将系统总扰动扩展为一个新的状态，通过观测器估计。
 
 **二阶系统**：$\ddot{y} = f(y, \dot{y}, w, t) + bu$
@@ -264,6 +266,24 @@ function u = ADRC_controller(r, y, state, params)
 
     % 更新状态
     state = [x1_td_new, x2_td_new, z1_new, z2_new, z3_new];
+end
+```
+
+**MATLAB 示例：简化 ADRC 控制器函数**
+
+```matlab
+function u = ADRC_controller(z_ref, z, z_dot, z_hat, z_dot_hat, b0, omega_c, omega_o)
+    % Tracking Differentiator (simplified)
+    e = z_hat - z;
+    % Extended State Observer (already estimated z_hat, z_dot_hat, f_hat)
+    f_hat = z_dot_hat;  % Total disturbance estimate
+    % Nonlinear state error feedback
+    e1 = z_ref - z_hat;
+    e2 = -z_dot_hat;
+    Kp = omega_c^2;
+    Kd = 2*omega_c;
+    u0 = Kp*e1 + Kd*e2;
+    u = (u0 - f_hat) / b0;
 end
 ```
 

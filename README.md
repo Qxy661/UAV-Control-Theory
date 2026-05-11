@@ -224,6 +224,17 @@ graph TD
 
 ---
 
+## 相关项目
+
+本项目是 [Qxy661](https://github.com/Qxy661) 无人机教学文档系列之一：
+
+| 项目 | 说明 | GitHub |
+|------|------|--------|
+| Simulink-UAV-Dynamics-Sim | Simulink无人机动力学仿真+PX4对接 | [Qxy661/Simulink-UAV-Dynamics-Sim](https://github.com/Qxy661/Simulink-UAV-Dynamics-Sim) |
+| RL-Autonomous-Flight | 强化学习自主飞行 | [Qxy661/RL-Autonomous-Flight](https://github.com/Qxy661/RL-Autonomous-Flight) |
+| UAV-Comm-DataLink | 无人机通信与数据链 | [Qxy661/UAV-Comm-DataLink](https://github.com/Qxy661/UAV-Comm-DataLink) |
+| LLM-Driven-UAV | LLM驱动的无人机系统 | [Qxy661/LLM-Driven-UAV](https://github.com/Qxy661/LLM-Driven-UAV) |
+
 ## 贡献指南
 
 欢迎提交 Issue 和 Pull Request！详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
